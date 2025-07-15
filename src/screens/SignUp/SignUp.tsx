@@ -1,14 +1,12 @@
 import { ChevronDownIcon, Eye, EyeOff, InstagramIcon } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Separator } from "../../components/ui/separator";
 
 export const SignUp = (): JSX.Element => {
   const navigate = useNavigate();
-  const { signUp } = useAuth();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -77,23 +75,11 @@ export const SignUp = (): JSX.Element => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await signUp(
-        formData.email,
-        formData.password,
-        formData.firstName,
-        formData.lastName
-      );
-      
-      if (error) {
-        if (error.message.includes('already registered')) {
-          setErrors({ email: 'An account with this email already exists' });
-        } else {
-          setErrors({ general: error.message || 'Failed to create account' });
-        }
-      } else {
-        // On successful signup, redirect to main page
-        navigate('/');
-      }
+      // Mock successful signup for now
+      console.log('Signup attempt:', formData);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      navigate('/');
     } catch (error) {
       setErrors({ general: 'An unexpected error occurred' });
     } finally {
@@ -318,7 +304,7 @@ export const SignUp = (): JSX.Element => {
         </div>
       </div>
 
-      {/* Footer - Same as main page */}
+      {/* Footer */}
       <footer className="flex flex-col w-full items-start pt-8 md:pt-16 pb-4 px-4 md:px-8 lg:px-20 bg-white border-t border-gray-200">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between w-full gap-8">
           <h2 className="[font-family:'DM_Sans',Helvetica] font-bold text-[#151515] text-[32px] md:text-[50.3px] tracking-[-3.52px]">
