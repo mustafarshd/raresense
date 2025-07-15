@@ -96,6 +96,11 @@ const mockGenerations = [
     originalImage: "https://images.pexels.com/photos/1927266/pexels-photo-1927266.jpeg?auto=compress&cs=tinysrgb&w=200",
     jewelryType: "Ring",
     gender: "female",
+    timestamp: "2025-01-11 01:00 PM",
+    tags: ["emerald", "vintage", "gold"]
+  }
+];
+
 export const Generations = (): JSX.Element => {
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
