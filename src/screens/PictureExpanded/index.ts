@@ -1,0 +1,1 @@
+export { PictureExpanded } from "./PictureExpanded";
