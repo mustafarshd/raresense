@@ -1,12 +1,14 @@
 import { ChevronDownIcon, Eye, EyeOff, InstagramIcon } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Separator } from "../../components/ui/separator";
 
 export const SignUp = (): JSX.Element => {
   const navigate = useNavigate();
+  const { signUp } = useAuth();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -74,14 +76,26 @@ export const SignUp = (): JSX.Element => {
 
     setIsSubmitting(true);
 
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const { error } = await signUp(
+        formData.email,
+        formData.password,
+        formData.firstName,
+        formData.lastName
+      );
       
-      // On successful signup, redirect to generations page
-      navigate('/generations');
+      if (error) {
+        if (error.message.includes('already registered')) {
+          setErrors({ email: 'An account with this email already exists' });
+        } else {
+          setErrors({ general: error.message || 'Failed to create account' });
+        }
+      } else {
+        // On successful signup, redirect to main page
+        navigate('/');
+      }
     } catch (error) {
-      console.error('Signup failed:', error);
+      setErrors({ general: 'An unexpected error occurred' });
     } finally {
       setIsSubmitting(false);
     }
@@ -118,6 +132,13 @@ export const SignUp = (): JSX.Element => {
 
             {/* Sign Up Form */}
             <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+              {/* General Error */}
+              {errors.general && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-red-600 text-sm">{errors.general}</p>
+                </div>
+              )}
+
               {/* Name Fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

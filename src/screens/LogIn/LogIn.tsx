@@ -1,12 +1,14 @@
 import { ChevronDownIcon, Eye, EyeOff, InstagramIcon } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Separator } from "../../components/ui/separator";
 
 export const LogIn = (): JSX.Element => {
   const navigate = useNavigate();
+  const { signIn } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: ""
@@ -49,14 +51,21 @@ export const LogIn = (): JSX.Element => {
 
     setIsSubmitting(true);
 
-    // Simulate API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const { error } = await signIn(formData.email, formData.password);
       
-      // On successful login, redirect to generations page
-      navigate('/generations');
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          setErrors({ general: 'Invalid email or password' });
+        } else {
+          setErrors({ general: error.message || 'Failed to log in' });
+        }
+      } else {
+        // On successful login, redirect to main page
+        navigate('/');
+      }
     } catch (error) {
-      console.error('Login failed:', error);
+      setErrors({ general: 'An unexpected error occurred' });
     } finally {
       setIsSubmitting(false);
     }
@@ -114,6 +123,13 @@ export const LogIn = (): JSX.Element => {
 
               {/* Log In Form */}
               <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
+                {/* General Error */}
+                {errors.general && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p className="text-red-600 text-sm">{errors.general}</p>
+                  </div>
+                )}
+
                 {/* Email */}
                 <div>
                   <Input

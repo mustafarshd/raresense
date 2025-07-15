@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import { db } from "../../lib/supabase";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import {
@@ -94,36 +96,56 @@ const mockGenerations = [
     originalImage: "https://images.pexels.com/photos/1927266/pexels-photo-1927266.jpeg?auto=compress&cs=tinysrgb&w=200",
     jewelryType: "Ring",
     gender: "female",
-    timestamp: "2025-01-11 01:45 PM",
-    tags: ["emerald", "vintage", "gold"]
-  },
-  {
-    id: 9,
-    image: "https://images.pexels.com/photos/1927267/pexels-photo-1927267.jpeg?auto=compress&cs=tinysrgb&w=400",
-    originalImage: "https://images.pexels.com/photos/1927267/pexels-photo-1927267.jpeg?auto=compress&cs=tinysrgb&w=200",
-    jewelryType: "Watch",
-    gender: "male",
-    timestamp: "2025-01-10 05:20 PM",
-    tags: ["digital", "smart", "tech"]
-  }
-];
-
 export const Generations = (): JSX.Element => {
   const navigate = useNavigate();
+  const { user, profile, signOut } = useAuth();
+  const [generations, setGenerations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedImages, setSelectedImages] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("Date Created");
   const [focusedImageId, setFocusedImageId] = useState<number | null>(null);
 
+  // Load user generations
+  useEffect(() => {
+    const loadGenerations = async () => {
+      if (!user) return;
+      
+      setLoading(true);
+      try {
+        const { data, error } = await db.getUserGenerations(user.id);
+        if (!error && data) {
+          // Transform database data to match component expectations
+          const transformedData = data.map((gen, index) => ({
+            id: index + 1,
+            image: gen.generated_images[0] || '',
+            originalImage: gen.original_images[0] || '',
+            jewelryType: gen.jewelry_type,
+            gender: gen.gender,
+            timestamp: new Date(gen.created_at).toLocaleString(),
+            tags: [] // Could be extracted from settings if needed
+          }));
+          setGenerations(transformedData);
+        }
+      } catch (error) {
+        console.error('Failed to load generations:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadGenerations();
+  }, [user]);
+
   // Filter generations based on search term
-  const filteredGenerations = mockGenerations.filter(generation =>
+  const filteredGenerations = generations.filter(generation =>
     generation.jewelryType.toLowerCase().includes(searchTerm.toLowerCase()) ||
     generation.gender.toLowerCase().includes(searchTerm.toLowerCase()) ||
     generation.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   // Group generations by date
-  const groupGenerationsByDate = (generations: typeof mockGenerations) => {
+  const groupGenerationsByDate = (generations: typeof generations) => {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
@@ -206,10 +228,11 @@ export const Generations = (): JSX.Element => {
 
   const handleDelete = useCallback(() => {
     console.log("Deleting selected images:", selectedImages);
+    // TODO: Implement actual deletion from database
     setSelectedImages([]);
   }, [selectedImages]);
 
-  const handleImageDoubleClick = useCallback((generation: typeof mockGenerations[0]) => {
+  const handleImageDoubleClick = useCallback((generation: typeof generations[0]) => {
     navigate('/picture-expanded', { 
       state: { 
         image: generation.image,
@@ -231,10 +254,10 @@ export const Generations = (): JSX.Element => {
   }, []);
 
   const handleLogout = () => {
-    navigate('/login');
+    signOut();
   };
 
-  const renderGenerationCard = (generation: typeof mockGenerations[0], showFullTimestamp = false) => (
+  const renderGenerationCard = (generation: typeof generations[0], showFullTimestamp = false) => (
     <div
       key={generation.id}
       className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 hover:shadow-md transition-all duration-200 hover:scale-[1.02] cursor-pointer relative group"
@@ -307,15 +330,21 @@ export const Generations = (): JSX.Element => {
               className="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2"
             >
               <Gem className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">50 tokens</span>
-              <span className="sm:hidden">50</span>
+              <span className="hidden sm:inline">{profile?.tokens || 0} tokens</span>
+              <span className="sm:hidden">{profile?.tokens || 0}</span>
             </Button>
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                <span className="text-xs sm:text-sm font-medium text-gray-600">U</span>
+                <span className="text-xs sm:text-sm font-medium text-gray-600">
+                  {profile?.first_name?.charAt(0) || 'U'}
+                </span>
               </div>
-              <span className="text-sm sm:text-base font-medium text-gray-900 hidden sm:inline">User Name</span>
-              <span className="text-sm font-medium text-gray-900 sm:hidden">User</span>
+              <span className="text-sm sm:text-base font-medium text-gray-900 hidden sm:inline">
+                {profile ? `${profile.first_name} ${profile.last_name}` : 'User'}
+              </span>
+              <span className="text-sm font-medium text-gray-900 sm:hidden">
+                {profile?.first_name || 'User'}
+              </span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -401,7 +430,12 @@ export const Generations = (): JSX.Element => {
         </div>
 
         {/* Generations Grid */}
-        {filteredGenerations.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-12 sm:py-16">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#151515] mx-auto mb-4"></div>
+            <p className="text-base sm:text-lg lg:text-xl text-gray-500">Loading your generations...</p>
+          </div>
+        ) : filteredGenerations.length === 0 ? (
           <div className="text-center py-12 sm:py-16">
             <Images className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 text-gray-300 mx-auto mb-6" />
             <h3 className="text-xl sm:text-2xl lg:text-3xl font-medium text-gray-900 mb-3">No generations found</h3>

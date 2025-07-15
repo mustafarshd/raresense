@@ -2,11 +2,13 @@ import { ChevronDownIcon, Check, Star } from "lucide-react";
 import { LogOut } from "lucide-react";
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
 
 export const Pricing = (): JSX.Element => {
   const navigate = useNavigate();
+  const { user, profile, signOut } = useAuth();
   const [showUserDropdown, setShowUserDropdown] = useState<boolean>(false);
 
   // Close dropdown when clicking outside
@@ -23,6 +25,11 @@ export const Pricing = (): JSX.Element => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showUserDropdown]);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
+  };
 
   const plans = [
     {
@@ -109,7 +116,7 @@ export const Pricing = (): JSX.Element => {
                 />
               </div>
               <span className="font-text-medium-20 text-white whitespace-nowrap text-sm md:text-base">
-                9999
+                {profile?.tokens || 0}
               </span>
             </Button>
 
@@ -120,10 +127,10 @@ export const Pricing = (): JSX.Element => {
                   className="flex items-center gap-4 hover:opacity-80 transition-opacity"
                 >
                   <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg md:text-2xl tracking-[-1.20px] leading-[19.2px] hidden sm:block">
-                    Username ABCD
+                    {profile ? `${profile.first_name} ${profile.last_name}` : 'User'}
                   </span>
                   <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-sm tracking-[-1.20px] leading-[19.2px] sm:hidden">
-                    User
+                    {profile?.first_name || 'User'}
                   </span>
                   <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-200 ${
                     showUserDropdown ? 'rotate-180' : ''
@@ -134,10 +141,7 @@ export const Pricing = (): JSX.Element => {
                 {showUserDropdown && (
                   <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                     <button
-                      onClick={() => {
-                        setShowUserDropdown(false);
-                        navigate('/signup');
-                      }}
+                      onClick={handleLogout}
                       className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
                     >
                       <LogOut className="w-4 h-4" />

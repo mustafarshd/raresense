@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import { db } from "../../lib/supabase";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
@@ -29,6 +31,7 @@ import { ToggleGroup, ToggleGroupItem } from "../../components/ui/toggle-group";
 
 export const PictureExpanded = (): JSX.Element => {
   const navigate = useNavigate();
+  const { user, profile, signOut, updateTokens } = useAuth();
   const [selectedJewelryType, setSelectedJewelryType] = useState<string>("");
   const [selectedGender, setSelectedGender] = useState<string>("male");
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
@@ -84,6 +87,14 @@ export const PictureExpanded = (): JSX.Element => {
   const handleGenerate = useCallback(() => {
     if (isGenerating) return;
     
+    // Check if user has enough tokens
+    const tokensRequired = 10; // Standard generation cost
+    if (!profile || profile.tokens < tokensRequired) {
+      alert('Insufficient tokens. Please purchase more tokens.');
+      navigate('/pricing');
+      return;
+    }
+    
     setIsGenerating(true);
     setProgress(0);
     setGeneratedImages([]);
@@ -95,6 +106,7 @@ export const PictureExpanded = (): JSX.Element => {
         if (prev >= 100) {
           clearInterval(progressInterval);
           setIsGenerating(false);
+          
           // Generate same number of images as uploaded
           const mockImages = [
             "https://images.pexels.com/photos/1927259/pexels-photo-1927259.jpeg?auto=compress&cs=tinysrgb&w=400",
@@ -115,12 +127,45 @@ export const PictureExpanded = (): JSX.Element => {
             mockImages[i % mockImages.length]
           );
           setGeneratedImages(imagesToGenerate);
+          
+          // Save generation to database and update tokens
+          if (user) {
+            saveGeneration(imagesToGenerate);
+            updateTokens(profile!.tokens - tokensRequired);
+          }
+          
           return 100;
         }
         return prev + 2;
       });
     }, 100);
-  }, [uploadedImages.length]);
+  }, [uploadedImages.length, profile, user, navigate, updateTokens]);
+
+  const saveGeneration = async (generatedImages: string[]) => {
+    if (!user) return;
+    
+    try {
+      await db.createGeneration({
+        user_id: user.id,
+        jewelry_type: selectedJewelryType,
+        gender: selectedGender,
+        original_images: uploadedImages,
+        generated_images: generatedImages,
+        settings: {
+          jewelry_type: selectedJewelryType,
+          gender: selectedGender,
+          timestamp: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error('Failed to save generation:', error);
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
+  };
 
   const isFormActive = selectedJewelryType !== "";
 
@@ -384,7 +429,7 @@ export const PictureExpanded = (): JSX.Element => {
                 <Gem className="w-4 h-4 text-white" />
               </div>
               <span className="font-text-medium-20 text-white whitespace-nowrap text-sm md:text-base">
-                9999
+                {profile?.tokens || 0}
               </span>
             </Button>
 
@@ -395,10 +440,10 @@ export const PictureExpanded = (): JSX.Element => {
                   className="flex items-center gap-4 hover:opacity-80 transition-opacity"
                 >
                   <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg md:text-2xl tracking-[-1.20px] leading-[19.2px] hidden sm:block">
-                    Username ABCD
+                    {profile ? `${profile.first_name} ${profile.last_name}` : 'User'}
                   </span>
                   <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-sm tracking-[-1.20px] leading-[19.2px] sm:hidden">
-                    User
+                    {profile?.first_name || 'User'}
                   </span>
                   <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-200 ${
                     showUserDropdown ? 'rotate-180' : ''
@@ -409,10 +454,7 @@ export const PictureExpanded = (): JSX.Element => {
                 {showUserDropdown && (
                   <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                     <button
-                      onClick={() => {
-                        setShowUserDropdown(false);
-                        navigate('/signup');
-                      }}
+                      onClick={handleLogout}
                       className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
