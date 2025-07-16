@@ -65,7 +65,7 @@ export const db = {
         email: profile.email,
         first_name: profile.first_name,
         last_name: profile.last_name,
-        tokens: 100, // Default tokens for new users
+        tokens: 1000, // Default tokens for new users
         subscription_tier: 'free' // Default tier
       })
       .select()
