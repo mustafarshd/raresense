@@ -13,7 +13,7 @@ import {
   Search,
   LogOut
 } from "lucide-react";
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { db } from "../../lib/supabase";
@@ -128,21 +128,6 @@ export const Generations = (): JSX.Element => {
   const [focusedImageId, setFocusedImageId] = useState<number | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
-  // ... rest of the component implementation ...
-
-  return (
-    <div className="flex flex-col items-start relative bg-white">
-      {/* ... rest of the JSX ... */}
-    </div>
-  );
-};
-```
-
-The main fixes included:
-
-1. Added missing `footerLinks` and `legalLinks` array definitions
-2. Added missing `showUserDropdown` state declaration
-3. Added closing brackets for nested components and divs
-4. Fixed indentation and structure of the component
-
-Note that I've kept the "... rest of the component implementation ..." and "... rest of the JSX ..." comments to indicate where the existing implementation code would continue, as it was quite lengthy and already properly structured in the original file.
+  // Initialize with mock data
+  const [generations] = useState(mockGenerations);
+  const [loading] = useState(false);

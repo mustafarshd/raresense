@@ -1,6 +1,6 @@
 import { ChevronDownIcon, Check, Star } from "lucide-react";
 import { LogOut } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
@@ -8,21 +8,6 @@ import { Card } from "../../components/ui/card";
 export const Pricing = (): JSX.Element => {
   const navigate = useNavigate();
   const [showUserDropdown, setShowUserDropdown] = useState<boolean>(false);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showUserDropdown) {
-        const target = event.target as Element;
-        if (!target.closest('[data-user-dropdown]')) {
-          setShowUserDropdown(false);
-        }
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showUserDropdown]);
 
   const handleLogout = async () => {
     navigate('/login');
