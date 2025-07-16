@@ -104,35 +104,21 @@ const mockGenerations = [
 
 export const Generations = (): JSX.Element => {
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
   const [generations, setGenerations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedImages, setSelectedImages] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("Date Created");
   const [focusedImageId, setFocusedImageId] = useState<number | null>(null);
+  const [showUserDropdown, setShowUserDropdown] = useState<boolean>(false);
 
   // Load user generations
   useEffect(() => {
     const loadGenerations = async () => {
-      if (!user) return;
-      
       setLoading(true);
       try {
-        const { data, error } = await db.getUserGenerations(user.id);
-        if (!error && data) {
-          // Transform database data to match component expectations
-          const transformedData = data.map((gen, index) => ({
-            id: index + 1,
-            image: gen.generated_images[0] || '',
-            originalImage: gen.original_images[0] || '',
-            jewelryType: gen.jewelry_type,
-            gender: gen.gender,
-            timestamp: new Date(gen.created_at).toLocaleString(),
-            tags: [] // Could be extracted from settings if needed
-          }));
-          setGenerations(transformedData);
-        }
+        // Use mock data for now
+        setGenerations(mockGenerations);
       } catch (error) {
         console.error('Failed to load generations:', error);
       } finally {
@@ -141,7 +127,22 @@ export const Generations = (): JSX.Element => {
     };
 
     loadGenerations();
-  }, [user]);
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showUserDropdown) {
+        const target = event.target as Element;
+        if (!target.closest('[data-user-dropdown]')) {
+          setShowUserDropdown(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showUserDropdown]);
 
   // Filter generations based on search term
   const filteredGenerations = generations.filter(generation =>
@@ -260,7 +261,7 @@ export const Generations = (): JSX.Element => {
   }, []);
 
   const handleLogout = () => {
-    signOut();
+    navigate('/login');
   };
 
   const renderGenerationCard = (generation: typeof generations[0], showFullTimestamp = false) => (
@@ -333,7 +334,7 @@ export const Generations = (): JSX.Element => {
                 <Gem className="w-4 h-4 text-white" />
               </div>
               <span className="font-text-medium-20 text-white whitespace-nowrap text-sm md:text-base">
-                {profile?.tokens || 0}
+                9,999
               </span>
             </Button>
 
@@ -344,10 +345,10 @@ export const Generations = (): JSX.Element => {
                   className="flex items-center gap-4 hover:opacity-80 transition-opacity"
                 >
                   <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg md:text-2xl tracking-[-1.20px] leading-[19.2px] hidden sm:block">
-                    {profile ? `${profile.first_name} ${profile.last_name}` : 'User'}
+                    John Doe
                   </span>
                   <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-sm tracking-[-1.20px] leading-[19.2px] sm:hidden">
-                    {profile?.first_name || 'User'}
+                    John
                   </span>
                   <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-200 ${
                     showUserDropdown ? 'rotate-180' : ''
@@ -388,123 +389,136 @@ export const Generations = (): JSX.Element => {
               >
                 <Gem className="w-5 h-5 text-gray-600" />
               </Button>
-        {/* Page Title */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Your Generations</h1>
-          <p className="text-sm sm:text-base text-gray-600">View and manage your AI-generated jewelry designs</p>
-        </div>
 
-        {/* Toolbar */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mb-4 sm:mb-6">
-            {/* Search */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Search generations..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-full"
-              />
-            </div>
-
-            {/* Sort */}
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-4 sm:items-center">
-              <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Sort by:</span>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Date Created">Date Created</SelectItem>
-                  <SelectItem value="Jewelry Type">Jewelry Type</SelectItem>
-                  <SelectItem value="Gender">Gender</SelectItem>
-                </SelectContent>
-              </Select>
+              <Button
+                variant="default"
+                className="flex w-10 h-10 items-center justify-center bg-[#151515] rounded-lg mt-2"
+                onClick={() => navigate('/')}
+              >
+                <Gem className="w-5 h-5 text-white" />
+              </Button>
             </div>
           </div>
+        </div>
 
-          {/* Action Buttons */}
-          {selectedImages.length > 0 && (
-            <div className="flex flex-wrap gap-2 sm:gap-3 pt-4 border-t border-gray-200">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSelectAll}
-                className="text-xs sm:text-sm"
-              >
-                {selectedImages.length === filteredGenerations.length ? 'Deselect All' : 'Select All'}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownload}
-                className="text-xs sm:text-sm"
-              >
-                <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Download ({selectedImages.length})
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDelete}
-                className="text-xs sm:text-sm text-red-600 hover:text-red-700"
-              >
-                <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Delete ({selectedImages.length})
-              </Button>
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-12 xl:p-16">
+          {/* Page Title */}
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Your Generations</h1>
+            <p className="text-sm sm:text-base text-gray-600">View and manage your AI-generated jewelry designs</p>
+          </div>
+
+          {/* Toolbar */}
+          <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mb-4 sm:mb-6">
+              {/* Search */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Search generations..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-full"
+                />
+              </div>
+
+              {/* Sort */}
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-4 sm:items-center">
+                <span className="text-sm font-medium text-gray-700 whitespace-nowrap">Sort by:</span>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-full sm:w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Date Created">Date Created</SelectItem>
+                    <SelectItem value="Jewelry Type">Jewelry Type</SelectItem>
+                    <SelectItem value="Gender">Gender</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            {selectedImages.length > 0 && (
+              <div className="flex flex-wrap gap-2 sm:gap-3 pt-4 border-t border-gray-200">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSelectAll}
+                  className="text-xs sm:text-sm"
+                >
+                  {selectedImages.length === filteredGenerations.length ? 'Deselect All' : 'Select All'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownload}
+                  className="text-xs sm:text-sm"
+                >
+                  <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  Download ({selectedImages.length})
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDelete}
+                  className="text-xs sm:text-sm text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  Delete ({selectedImages.length})
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Generations Grid */}
+          {loading ? (
+            <div className="text-center py-12 sm:py-16">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#151515] mx-auto mb-4"></div>
+              <p className="text-base sm:text-lg lg:text-xl text-gray-500">Loading your generations...</p>
+            </div>
+          ) : filteredGenerations.length === 0 ? (
+            <div className="text-center py-12 sm:py-16">
+              <Images className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 text-gray-300 mx-auto mb-6" />
+              <h3 className="text-xl sm:text-2xl lg:text-3xl font-medium text-gray-900 mb-3">No generations found</h3>
+              <p className="text-base sm:text-lg lg:text-xl text-gray-500">
+                {searchTerm ? 'Try adjusting your search terms.' : 'Start creating some jewelry designs to see them here.'}
+              </p>
+            </div>
+          ) : groupedGenerations ? (
+            // Grouped by date view
+            <div className="space-y-8 sm:space-y-10 lg:space-y-12">
+              {Object.entries(groupedGenerations)
+                .sort(([a], [b]) => {
+                  // Sort date groups: Today, Yesterday, then chronologically
+                  if (a === "Today") return -1;
+                  if (b === "Today") return 1;
+                  if (a === "Yesterday") return -1;
+                  if (b === "Yesterday") return 1;
+                  return new Date(b).getTime() - new Date(a).getTime();
+                })
+                .map(([dateLabel, generations]) => (
+                  <div key={dateLabel}>
+                    <div className="flex items-center mb-6 sm:mb-8 lg:mb-10">
+                      <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900">{dateLabel}</h2>
+                      <div className="flex-1 h-px bg-gray-200 ml-6"></div>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-8">
+                      {generations.map(generation => renderGenerationCard(generation, false))}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            // Regular grid view
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-8">
+              {sortedGenerations.map(generation => renderGenerationCard(generation, true))}
             </div>
           )}
         </div>
-
-        {/* Generations Grid */}
-        {loading ? (
-          <div className="text-center py-12 sm:py-16">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#151515] mx-auto mb-4"></div>
-            <p className="text-base sm:text-lg lg:text-xl text-gray-500">Loading your generations...</p>
-          </div>
-        ) : filteredGenerations.length === 0 ? (
-          <div className="text-center py-12 sm:py-16">
-            <Images className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 text-gray-300 mx-auto mb-6" />
-            <h3 className="text-xl sm:text-2xl lg:text-3xl font-medium text-gray-900 mb-3">No generations found</h3>
-            <p className="text-base sm:text-lg lg:text-xl text-gray-500">
-              {searchTerm ? 'Try adjusting your search terms.' : 'Start creating some jewelry designs to see them here.'}
-            </p>
-          </div>
-        ) : groupedGenerations ? (
-          // Grouped by date view
-          <div className="space-y-8 sm:space-y-10 lg:space-y-12">
-            {Object.entries(groupedGenerations)
-              .sort(([a], [b]) => {
-                // Sort date groups: Today, Yesterday, then chronologically
-                if (a === "Today") return -1;
-                if (b === "Today") return 1;
-                if (a === "Yesterday") return -1;
-                if (b === "Yesterday") return 1;
-                return new Date(b).getTime() - new Date(a).getTime();
-              })
-              .map(([dateLabel, generations]) => (
-                <div key={dateLabel}>
-                  <div className="flex items-center mb-6 sm:mb-8 lg:mb-10">
-                    <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-900">{dateLabel}</h2>
-                    <div className="flex-1 h-px bg-gray-200 ml-6"></div>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-8">
-                    {generations.map(generation => renderGenerationCard(generation, false))}
-                  </div>
-                </div>
-              ))}
-          </div>
-        ) : (
-          // Regular grid view
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-6 lg:gap-8">
-            {sortedGenerations.map(generation => renderGenerationCard(generation, true))}
-          </div>
-        )}
-      </main>
       </div>
 
-      {/* Footer */}
       <Separator className="w-full" />
 
       <footer className="flex flex-col w-full items-start pt-8 md:pt-16 pb-4 px-4 md:px-8 lg:px-20 bg-white">
@@ -514,13 +528,21 @@ export const Generations = (): JSX.Element => {
           </h2>
 
           <div className="flex flex-wrap items-center gap-4 md:gap-8">
-            {footerLinks.map((link, index) => (
-              <Button key={index} variant="link" className="p-0 h-auto">
-                <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg md:text-2xl tracking-[-1.20px] leading-[19.2px]">
-                  {link.text}
-                </span>
-              </Button>
-            ))}
+            <Button variant="link" className="p-0 h-auto">
+              <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg md:text-2xl tracking-[-1.20px] leading-[19.2px]">
+                How it works
+              </span>
+            </Button>
+            <Button variant="link" className="p-0 h-auto">
+              <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg md:text-2xl tracking-[-1.20px] leading-[19.2px]">
+                About
+              </span>
+            </Button>
+            <Button variant="link" className="p-0 h-auto">
+              <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg md:text-2xl tracking-[-1.20px] leading-[19.2px]">
+                FAQs
+              </span>
+            </Button>
           </div>
 
           <div className="flex flex-col w-full lg:w-[350px] items-start gap-6 md:gap-8">
@@ -539,23 +561,25 @@ export const Generations = (): JSX.Element => {
                 </div>
               </Button>
             </div>
-              </div>
-            </div>
-          </div>
 
             <div className="flex flex-col items-start gap-4 w-full">
               <p className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg leading-[27px]">
                 Subscribe to our newsletter
               </p>
-          <Separator className="my-8 sm:my-10 lg:my-12" />
-          
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-xs sm:text-sm text-gray-500">
-              © 2025 JewelryAI. All rights reserved.
-            </p>
-            <div className="flex flex-wrap gap-4 sm:gap-6">
-              <a href="#" className="text-xs sm:text-sm text-gray-500 hover:text-gray-900">Privacy Policy</a>
-              <a href="#" className="text-xs sm:text-sm text-gray-500 hover:text-gray-900">Terms of Service</a>
+
+              <div className="flex flex-col sm:flex-row items-start gap-2 w-full">
+                <Input
+                  placeholder="Enter your email"
+                  className="flex-1 w-full sm:w-auto px-4 py-2 rounded border border-solid border-[#151515] [font-family:'DM_Sans',Helvetica] font-normal text-[#151515] text-sm leading-[21px]"
+                />
+                <Button variant="ghost" size="icon" className="p-0 self-center sm:self-auto">
+                  <ChevronDownIcon className="w-8 h-8 md:w-10 md:h-10 rotate-[-90deg]" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="relative w-full max-w-7xl mx-auto h-[150px] md:h-[310px] [font-family:'DM_Sans',Helvetica] font-normal text-transparent text-[120px] md:text-[293.1px] tracking-[-14.65px] leading-[120px] md:leading-[293.1px] whitespace-nowrap overflow-hidden">
           <span className="font-medium text-[#151515] tracking-[-20px] md:tracking-[-42.95px]">
             innovati
@@ -564,25 +588,30 @@ export const Generations = (): JSX.Element => {
             ve
           </span>
         </div>
-          </div>
+
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between py-5 w-full max-w-7xl mx-auto border-t-2 border-[#151515] gap-4">
           <div className="[font-family:'DM_Sans',Helvetica] font-normal text-[#151515] text-sm text-center leading-[21px]">
             © SnapwearAI 2025.
           </div>
-        </div>
+
           <div className="flex flex-wrap items-center gap-2 md:gap-4">
-            {legalLinks.map((link, index) => (
-              <React.Fragment key={index}>
-                {index > 0 && (
-                  <Separator orientation="vertical" className="h-4 md:h-5 hidden sm:block" />
-                )}
-                <Button variant="link" className="p-0 h-auto">
-                  <span className="[font-family:'DM_Sans',Helvetica] font-normal text-[#151515] text-xs md:text-sm leading-[19.9px]">
-                    {link.text}
-                  </span>
-                </Button>
-              </React.Fragment>
-            ))}
+            <Button variant="link" className="p-0 h-auto">
+              <span className="[font-family:'DM_Sans',Helvetica] font-normal text-[#151515] text-xs md:text-sm leading-[19.9px]">
+                Terms & Conditions
+              </span>
+            </Button>
+            <Separator orientation="vertical" className="h-4 md:h-5 hidden sm:block" />
+            <Button variant="link" className="p-0 h-auto">
+              <span className="[font-family:'DM_Sans',Helvetica] font-normal text-[#151515] text-xs md:text-sm leading-[19.9px]">
+                Privacy Policy
+              </span>
+            </Button>
+            <Separator orientation="vertical" className="h-4 md:h-5 hidden sm:block" />
+            <Button variant="link" className="p-0 h-auto">
+              <span className="[font-family:'DM_Sans',Helvetica] font-normal text-[#151515] text-xs md:text-sm leading-[19.9px]">
+                Cookies
+              </span>
+            </Button>
           </div>
         </div>
       </footer>
