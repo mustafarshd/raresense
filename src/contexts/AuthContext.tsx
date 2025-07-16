@@ -87,35 +87,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [])
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
-    const { data, error } = await auth.signUp(email, password, firstName, lastName)
-    
-    if (error) {
-      return { error }
-    }
-    
-    // If signup successful and user is created, create profile
-    if (data.user) {
-      try {
-        // Create user profile in database
-        const { error: profileError } = await db.createUserProfile({
-          id: data.user.id,
-          email: data.user.email!,
-          first_name: firstName,
-          last_name: lastName
-        })
-        
-        if (profileError) {
-          console.error('Failed to create user profile:', profileError)
-          return { error: { message: 'Account created but profile setup failed. Please contact support.' } }
-        }
-      } catch (profileError) {
-        console.error('Profile creation error:', profileError)
-        return { error: { message: 'Account created but profile setup failed. Please contact support.' } }
+    try {
+      const { data, error } = await auth.signUp(email, password, firstName, lastName)
+      
+      if (error) {
+        console.error('Signup error:', error)
+        return { error }
       }
+      
+      // The trigger should automatically create the profile, but let's verify
+      if (data.user) {
+        // Wait a moment for the trigger to execute
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        // Check if profile was created by trigger
+        const { data: profile, error: profileError } = await db.getUserProfile(data.user.id)
+        
+        if (profileError || !profile) {
+          console.log('Trigger did not create profile, creating manually...')
+          // Fallback: create profile manually if trigger failed
+          const { error: manualCreateError } = await db.createUserProfile({
+            id: data.user.id,
+            email: data.user.email!,
+            first_name: firstName,
+            last_name: lastName
+          })
+          
+          if (manualCreateError) {
+            console.error('Manual profile creation failed:', manualCreateError)
+            return { error: { message: 'Account created but profile setup failed. Please contact support.' } }
+          }
+        }
+      }
+      
+      return { error: null }
+    } catch (error) {
+      console.error('Signup process error:', error)
+      return { error: { message: 'An unexpected error occurred during signup' } }
     }
-    
-    return { error: null }
   }
+    
 
   const signIn = async (email: string, password: string) => {
     const { data, error } = await auth.signIn(email, password)

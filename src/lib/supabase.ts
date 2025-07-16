@@ -23,6 +23,8 @@ export const auth = {
         }
       }
     })
+    
+    console.log('Signup result:', { data, error })
     return { data, error }
   },
 
