@@ -12,8 +12,6 @@ import {
 } from "lucide-react";
 import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
-import { db } from "../../lib/supabase";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
@@ -112,37 +110,14 @@ export const Generations = (): JSX.Element => {
   const [focusedImageId, setFocusedImageId] = useState<number | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState<boolean>(false);
 
-  // Load user generations
+  // Load mock generations
   useEffect(() => {
-    const loadGenerations = async () => {
-      setLoading(true);
-      try {
-        // Use mock data for now
-        setGenerations(mockGenerations);
-      } catch (error) {
-        console.error('Failed to load generations:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadGenerations();
+    // Simulate loading
+    setTimeout(() => {
+      setGenerations(mockGenerations);
+      setLoading(false);
+    }, 1000);
   }, []);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showUserDropdown) {
-        const target = event.target as Element;
-        if (!target.closest('[data-user-dropdown]')) {
-          setShowUserDropdown(false);
-        }
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showUserDropdown]);
 
   // Filter generations based on search term
   const filteredGenerations = generations.filter(generation =>
@@ -398,17 +373,21 @@ export const Generations = (): JSX.Element => {
                 <Gem className="w-5 h-5 text-white" />
               </Button>
             </div>
+
+            {/* Tool configuration panel */}
+            <div className="flex-1 flex flex-col p-4">
+              <div className="flex flex-col gap-5">
+                <h2 className="font-headings-desktop-h3 text-[#151515]">
+                  Your Generations
+                </h2>
+                <p className="text-sm text-gray-600">View and manage your AI-generated jewelry designs</p>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Main content area */}
         <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-12 xl:p-16">
-          {/* Page Title */}
-          <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Your Generations</h1>
-            <p className="text-sm sm:text-base text-gray-600">View and manage your AI-generated jewelry designs</p>
-          </div>
-
           {/* Toolbar */}
           <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mb-4 sm:mb-6">
@@ -519,6 +498,7 @@ export const Generations = (): JSX.Element => {
         </div>
       </div>
 
+      {/* Footer */}
       <Separator className="w-full" />
 
       <footer className="flex flex-col w-full items-start pt-8 md:pt-16 pb-4 px-4 md:px-8 lg:px-20 bg-white">
@@ -528,21 +508,13 @@ export const Generations = (): JSX.Element => {
           </h2>
 
           <div className="flex flex-wrap items-center gap-4 md:gap-8">
-            <Button variant="link" className="p-0 h-auto">
-              <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg md:text-2xl tracking-[-1.20px] leading-[19.2px]">
-                How it works
-              </span>
-            </Button>
-            <Button variant="link" className="p-0 h-auto">
-              <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg md:text-2xl tracking-[-1.20px] leading-[19.2px]">
-                About
-              </span>
-            </Button>
-            <Button variant="link" className="p-0 h-auto">
-              <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg md:text-2xl tracking-[-1.20px] leading-[19.2px]">
-                FAQs
-              </span>
-            </Button>
+            {["About", "Contact", "Support"].map((link, index) => (
+              <Button key={index} variant="link" className="p-0 h-auto">
+                <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg md:text-2xl tracking-[-1.20px] leading-[19.2px]">
+                  {link}
+                </span>
+              </Button>
+            ))}
           </div>
 
           <div className="flex flex-col w-full lg:w-[350px] items-start gap-6 md:gap-8">
@@ -595,23 +567,18 @@ export const Generations = (): JSX.Element => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 md:gap-4">
-            <Button variant="link" className="p-0 h-auto">
-              <span className="[font-family:'DM_Sans',Helvetica] font-normal text-[#151515] text-xs md:text-sm leading-[19.9px]">
-                Terms & Conditions
-              </span>
-            </Button>
-            <Separator orientation="vertical" className="h-4 md:h-5 hidden sm:block" />
-            <Button variant="link" className="p-0 h-auto">
-              <span className="[font-family:'DM_Sans',Helvetica] font-normal text-[#151515] text-xs md:text-sm leading-[19.9px]">
-                Privacy Policy
-              </span>
-            </Button>
-            <Separator orientation="vertical" className="h-4 md:h-5 hidden sm:block" />
-            <Button variant="link" className="p-0 h-auto">
-              <span className="[font-family:'DM_Sans',Helvetica] font-normal text-[#151515] text-xs md:text-sm leading-[19.9px]">
-                Cookies
-              </span>
-            </Button>
+            {["Terms & Conditions", "Privacy Policy", "Cookies"].map((link, index) => (
+              <React.Fragment key={index}>
+                {index > 0 && (
+                  <Separator orientation="vertical" className="h-4 md:h-5 hidden sm:block" />
+                )}
+                <Button variant="link" className="p-0 h-auto">
+                  <span className="[font-family:'DM_Sans',Helvetica] font-normal text-[#151515] text-xs md:text-sm leading-[19.9px]">
+                    {link}
+                  </span>
+                </Button>
+              </React.Fragment>
+            ))}
           </div>
         </div>
       </footer>
