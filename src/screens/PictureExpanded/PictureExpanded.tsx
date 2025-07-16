@@ -88,7 +88,7 @@ export const PictureExpanded = (): JSX.Element => {
     if (isGenerating) return;
     
     // Check if user has enough tokens
-    const tokensRequired = 10; // Standard generation cost
+    const tokensRequired = 0; // Standard generation cost
     if (!profile || profile.tokens < tokensRequired) {
       alert('Insufficient tokens. Please purchase more tokens.');
       navigate('/pricing');
@@ -480,7 +480,7 @@ export const PictureExpanded = (): JSX.Element => {
               >
                 <Gem className="w-5 h-5 text-white" />
               </Button>
-
+.ts
               <Button
                 variant="outline"
                 onClick={(e) => {
