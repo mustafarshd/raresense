@@ -1,6 +1,3 @@
-Here's the fixed version with added closing brackets and proper structure:
-
-```javascript
 import { 
   ChevronDownIcon, 
   InstagramIcon, 
@@ -120,14 +117,20 @@ const legalLinks = [
 export const Generations = (): JSX.Element => {
   const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
-  const [generations, setGenerations] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  // Initialize with mock data (removed duplicate declarations)
+  const [generations] = useState(mockGenerations);
+  const [loading] = useState(false);
   const [selectedImages, setSelectedImages] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("Date Created");
   const [focusedImageId, setFocusedImageId] = useState<number | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
-  // Initialize with mock data
-  const [generations] = useState(mockGenerations);
-  const [loading] = useState(false);
+  // Component implementation would continue here...
+  return (
+    <div>
+      {/* Your component JSX here */}
+    </div>
+  );
+};
