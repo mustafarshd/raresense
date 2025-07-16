@@ -1,6 +1,6 @@
 import { ChevronDownIcon, Check, Star } from "lucide-react";
 import { LogOut } from "lucide-react";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "../../components/ui/button";
@@ -8,7 +8,6 @@ import { Card } from "../../components/ui/card";
 
 export const Pricing = (): JSX.Element => {
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
   const [showUserDropdown, setShowUserDropdown] = useState<boolean>(false);
 
   // Close dropdown when clicking outside
@@ -27,7 +26,6 @@ export const Pricing = (): JSX.Element => {
   }, [showUserDropdown]);
 
   const handleLogout = async () => {
-    await signOut();
     navigate('/login');
   };
 
@@ -116,7 +114,7 @@ export const Pricing = (): JSX.Element => {
                 />
               </div>
               <span className="font-text-medium-20 text-white whitespace-nowrap text-sm md:text-base">
-                {profile?.tokens || 0}
+                9,999
               </span>
             </Button>
 
@@ -127,10 +125,10 @@ export const Pricing = (): JSX.Element => {
                   className="flex items-center gap-4 hover:opacity-80 transition-opacity"
                 >
                   <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg md:text-2xl tracking-[-1.20px] leading-[19.2px] hidden sm:block">
-                    {profile ? `${profile.first_name} ${profile.last_name}` : 'User'}
+                    John Doe
                   </span>
                   <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-sm tracking-[-1.20px] leading-[19.2px] sm:hidden">
-                    {profile?.first_name || 'User'}
+                    John
                   </span>
                   <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-200 ${
                     showUserDropdown ? 'rotate-180' : ''
@@ -154,6 +152,7 @@ export const Pricing = (): JSX.Element => {
           </div>
         </div>
       </header>
+
       <main className="flex-1 w-full px-4 md:px-8 lg:px-12 py-8 md:py-16">
         {/* Hero Section */}
         <div className="text-center mb-8 md:mb-16 max-w-4xl mx-auto">

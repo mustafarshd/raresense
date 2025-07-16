@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { db } from "../../lib/supabase";
 import { Button } from "../../components/ui/button";
+import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import {
   Select,
@@ -315,56 +316,78 @@ export const Generations = (): JSX.Element => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex flex-col items-start relative bg-white">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 h-20 lg:h-[106px]">
+      <header className="relative w-full h-[80px] md:h-[106px] bg-white shadow-[0px_4px_4px_#00000040] z-10">
         <div className="flex items-center justify-between h-full">
-          {/* Logo */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
-              <Gem className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-            </div>
-            <span className="text-lg sm:text-xl font-bold text-gray-900">JewelryAI</span>
-          </div>
+          <h1 className="[font-family:'DM_Sans',Helvetica] font-bold text-[#151515] text-[32px] tracking-[-2.24px]">
+            snapwear AI
+          </h1>
 
-          {/* User Section */}
           <div className="flex items-center gap-3 sm:gap-4">
             <Button
-              variant="outline"
-              size="sm"
-              className="text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2"
+              variant="default"
+              className="flex h-[40px] md:h-[45px] items-center gap-[10px] md:gap-[15px] p-2 md:p-3 bg-[#151515] rounded hover:bg-[#2a2a2a] transition-colors"
             >
-              <Gem className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">{profile?.tokens || 0} tokens</span>
-              <span className="sm:hidden">{profile?.tokens || 0}</span>
-            </Button>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                <span className="text-xs sm:text-sm font-medium text-gray-600">
-                  {profile?.first_name?.charAt(0) || 'U'}
-                </span>
+              <div className="relative w-[20px] h-[20px] md:w-[23px] md:h-[23px] flex items-center justify-center">
+                <Gem className="w-4 h-4 text-white" />
               </div>
-              <span className="text-sm sm:text-base font-medium text-gray-900 hidden sm:inline">
-                {profile ? `${profile.first_name} ${profile.last_name}` : 'User'}
+              <span className="font-text-medium-20 text-white whitespace-nowrap text-sm md:text-base">
+                {profile?.tokens || 0}
               </span>
-              <span className="text-sm font-medium text-gray-900 sm:hidden">
-                {profile?.first_name || 'User'}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="p-1 sm:p-2"
-              >
-                <LogOut className="w-4 h-4 text-gray-500" />
-              </Button>
+            </Button>
+
+            <div className="flex items-center gap-2 md:gap-4" data-user-dropdown>
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserDropdown(!showUserDropdown)}
+                  className="flex items-center gap-4 hover:opacity-80 transition-opacity"
+                >
+                  <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg md:text-2xl tracking-[-1.20px] leading-[19.2px] hidden sm:block">
+                    {profile ? `${profile.first_name} ${profile.last_name}` : 'User'}
+                  </span>
+                  <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-sm tracking-[-1.20px] leading-[19.2px] sm:hidden">
+                    {profile?.first_name || 'User'}
+                  </span>
+                  <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                    showUserDropdown ? 'rotate-180' : ''
+                  }`} />
+                </button>
+
+                {/* Dropdown Menu */}
+                {showUserDropdown && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 sm:py-8 lg:py-12 max-w-7xl mx-auto w-full">
+      <div className="flex w-full min-h-screen">
+        {/* Sidebar */}
+        <div className="hidden lg:flex lg:w-1/4 lg:min-w-[320px] lg:max-w-[400px] border-r border-gray-200 bg-white">
+          <div className="flex h-full">
+            {/* Tool selection sidebar */}
+            <div className="flex flex-col w-[60px] items-center justify-start gap-4 py-6 bg-gray-50 border-r border-gray-200">
+              <Button
+                variant="outline"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/');
+                }}
+                className="flex w-10 h-10 items-center justify-center bg-white rounded-lg border-gray-300"
+              >
+                <Gem className="w-5 h-5 text-gray-600" />
+              </Button>
         {/* Page Title */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Your Generations</h1>
@@ -479,63 +502,51 @@ export const Generations = (): JSX.Element => {
           </div>
         )}
       </main>
+      </div>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-16 sm:mt-20 lg:mt-24">
-        <div className="px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8 sm:py-12 lg:py-16 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 sm:gap-8 lg:gap-12">
-            {/* Company Info */}
-            <div className="md:col-span-1">
-              <div className="flex items-center gap-2 sm:gap-3 mb-4">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
-                  <Gem className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+      <Separator className="w-full" />
+
+      <footer className="flex flex-col w-full items-start pt-8 md:pt-16 pb-4 px-4 md:px-8 lg:px-20 bg-white">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between w-full gap-8 max-w-7xl mx-auto">
+          <h2 className="[font-family:'DM_Sans',Helvetica] font-bold text-[#151515] text-[32px] md:text-[50.3px] tracking-[-3.52px]">
+            snapwear AI
+          </h2>
+
+          <div className="flex flex-wrap items-center gap-4 md:gap-8">
+            {footerLinks.map((link, index) => (
+              <Button key={index} variant="link" className="p-0 h-auto">
+                <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg md:text-2xl tracking-[-1.20px] leading-[19.2px]">
+                  {link.text}
+                </span>
+              </Button>
+            ))}
+          </div>
+
+          <div className="flex flex-col w-full lg:w-[350px] items-start gap-6 md:gap-8">
+            <div className="flex items-start gap-4 md:gap-8">
+              <Button variant="ghost" size="icon" className="p-0 h-auto">
+                <InstagramIcon className="w-6 h-6 text-[#151515]" />
+              </Button>
+              <Button variant="ghost" size="icon" className="p-0 h-auto">
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <div className="w-4 h-4 bg-[#151515] rounded-sm"></div>
                 </div>
-                <span className="text-lg sm:text-xl font-bold text-gray-900">JewelryAI</span>
-              </div>
-              <p className="text-sm sm:text-base text-gray-600 mb-4">
-                Create stunning jewelry designs with the power of artificial intelligence.
-              </p>
-              <div className="flex gap-3 sm:gap-4">
-                <Button variant="ghost" size="sm" className="p-2">
-                  <InstagramIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                </Button>
-              </div>
+              </Button>
+              <Button variant="ghost" size="icon" className="p-0 h-auto">
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <div className="w-4 h-4 bg-[#151515] rounded-sm"></div>
+                </div>
+              </Button>
             </div>
-
-            {/* Quick Links */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Quick Links</h3>
-              <ul className="space-y-2 sm:space-y-3">
-                <li><a href="#" className="text-sm sm:text-base text-gray-600 hover:text-gray-900">Dashboard</a></li>
-                <li><a href="#" className="text-sm sm:text-base text-gray-600 hover:text-gray-900">Generations</a></li>
-                <li><a href="#" className="text-sm sm:text-base text-gray-600 hover:text-gray-900">Pricing</a></li>
-              </ul>
-            </div>
-
-            {/* Support */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Support</h3>
-              <ul className="space-y-2 sm:space-y-3">
-                <li><a href="#" className="text-sm sm:text-base text-gray-600 hover:text-gray-900">Help Center</a></li>
-                <li><a href="#" className="text-sm sm:text-base text-gray-600 hover:text-gray-900">Contact Us</a></li>
-                <li><a href="#" className="text-sm sm:text-base text-gray-600 hover:text-gray-900">API Docs</a></li>
-              </ul>
-            </div>
-
-            {/* Newsletter */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Stay Updated</h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4">Get the latest updates and features.</p>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Input 
-                  placeholder="Enter your email" 
-                  className="flex-1 text-sm"
-                />
-                <Button size="sm" className="text-sm">Subscribe</Button>
               </div>
             </div>
           </div>
 
+            <div className="flex flex-col items-start gap-4 w-full">
+              <p className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg leading-[27px]">
+                Subscribe to our newsletter
+              </p>
           <Separator className="my-8 sm:my-10 lg:my-12" />
           
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -545,8 +556,33 @@ export const Generations = (): JSX.Element => {
             <div className="flex flex-wrap gap-4 sm:gap-6">
               <a href="#" className="text-xs sm:text-sm text-gray-500 hover:text-gray-900">Privacy Policy</a>
               <a href="#" className="text-xs sm:text-sm text-gray-500 hover:text-gray-900">Terms of Service</a>
-              <a href="#" className="text-xs sm:text-sm text-gray-500 hover:text-gray-900">Cookie Policy</a>
-            </div>
+        <div className="relative w-full max-w-7xl mx-auto h-[150px] md:h-[310px] [font-family:'DM_Sans',Helvetica] font-normal text-transparent text-[120px] md:text-[293.1px] tracking-[-14.65px] leading-[120px] md:leading-[293.1px] whitespace-nowrap overflow-hidden">
+          <span className="font-medium text-[#151515] tracking-[-20px] md:tracking-[-42.95px]">
+            innovati
+          </span>
+          <span className="[font-family:'Cormorant_Garamond',Helvetica] font-light italic text-[#151515] text-[150px] md:text-[370.9px] tracking-[-30px] md:tracking-[-68.79px] leading-[150px] md:leading-[370.9px]">
+            ve
+          </span>
+        </div>
+          </div>
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between py-5 w-full max-w-7xl mx-auto border-t-2 border-[#151515] gap-4">
+          <div className="[font-family:'DM_Sans',Helvetica] font-normal text-[#151515] text-sm text-center leading-[21px]">
+            © SnapwearAI 2025.
+          </div>
+        </div>
+          <div className="flex flex-wrap items-center gap-2 md:gap-4">
+            {legalLinks.map((link, index) => (
+              <React.Fragment key={index}>
+                {index > 0 && (
+                  <Separator orientation="vertical" className="h-4 md:h-5 hidden sm:block" />
+                )}
+                <Button variant="link" className="p-0 h-auto">
+                  <span className="[font-family:'DM_Sans',Helvetica] font-normal text-[#151515] text-xs md:text-sm leading-[19.9px]">
+                    {link.text}
+                  </span>
+                </Button>
+              </React.Fragment>
+            ))}
           </div>
         </div>
       </footer>
