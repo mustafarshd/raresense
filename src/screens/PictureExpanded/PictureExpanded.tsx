@@ -380,7 +380,7 @@ export const PictureExpanded = (): JSX.Element => {
               <h3 className="font-headings-desktop-h3 text-[#151515] mb-2">
                 Your Tokens
               </h3>
-              <div className="text-4xl font-bold text-[#151515] mb-2">12</div>
+              <div className="text-4xl font-bold text-[#151515] mb-2">9,999</div>
               <p className="text-gray-600">tokens remaining</p>
             </div>
             
@@ -429,7 +429,7 @@ export const PictureExpanded = (): JSX.Element => {
                 <Gem className="w-4 h-4 text-white" />
               </div>
               <span className="font-text-medium-20 text-white whitespace-nowrap text-sm md:text-base">
-                {profile?.tokens || 12}
+                {profile?.tokens || 0}
               </span>
             </Button>
 
@@ -573,4 +573,456 @@ export const PictureExpanded = (): JSX.Element => {
                         const placeholderImages = [
                           "https://images.pexels.com/photos/1927259/pexels-photo-1927259.jpeg?auto=compress&cs=tinysrgb&w=200",
                           "https://images.pexels.com/photos/1927260/pexels-photo-1927260.jpeg?auto=compress&cs=tinysrgb&w=200",
-                          "https://images.pexels.com/photos/1927261/pexels-photo-1927261.jpeg?auto
+                          "https://images.pexels.com/photos/1927261/pexels-photo-1927261.jpeg?auto=compress&cs=tinysrgb&w=200",
+                          "https://images.pexels.com/photos/1927262/pexels-photo-1927262.jpeg?auto=compress&cs=tinysrgb&w=200",
+                          "https://images.pexels.com/photos/1927263/pexels-photo-1927263.jpeg?auto=compress&cs=tinysrgb&w=200",
+                          "https://images.pexels.com/photos/1927264/pexels-photo-1927264.jpeg?auto=compress&cs=tinysrgb&w=200"
+                        ];
+                        const nextImage = placeholderImages[uploadedImages.length % placeholderImages.length];
+                        setUploadedImages(prev => [...prev, nextImage]);
+                      }
+                    }}
+                  >
+                    <UploadIcon className={`w-4 h-4 ${isFormActive ? "text-black" : "text-gray-400"}`} />
+                    <span className={`text-sm ${
+                      isFormActive ? "text-black" : "text-gray-400"
+                    }`}>
+                      Browse files
+                    </span>
+                  </Button>
+                </div>
+
+                <div className="flex flex-col gap-3">                  
+                  <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+                    <button
+                      onClick={() => isFormActive && setSelectedGender("male")}
+                      disabled={!isFormActive}
+                      className={`flex-1 py-2 px-4 text-sm font-medium transition-all duration-200 ${
+                        selectedGender === "male" && isFormActive
+                          ? "bg-[#161616] text-white" 
+                          : isFormActive
+                          ? "bg-white text-[#151515] hover:bg-gray-50"
+                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
+                    >
+                      Male
+                    </button>
+                    <button
+                      onClick={() => isFormActive && setSelectedGender("female")}
+                      disabled={!isFormActive}
+                      className={`flex-1 py-2 px-4 text-sm font-medium transition-all duration-200 border-l border-gray-300 ${
+                        selectedGender === "female" && isFormActive
+                          ? "bg-[#161616] text-white" 
+                          : isFormActive
+                          ? "bg-white text-[#151515] hover:bg-gray-50"
+                          : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      }`}
+                    >
+                      Female
+                    </button>
+                  </div>
+                </div>
+
+                <Button
+                  disabled={!isFormActive || uploadedImages.length === 0}
+                  variant="default"
+                  onClick={handleGenerate}
+                  className={`w-full py-2 px-4 rounded-lg transition-all duration-200 ${
+                    isFormActive && uploadedImages.length > 0
+                      ? "bg-[#151515] hover:bg-[#2a2a2a] text-white" 
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
+                >
+                  <span className="font-medium">Generate</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col p-4 md:p-6 lg:p-12 xl:p-16">
+          {/* Mobile Sidebar - Only visible on mobile */}
+          <div className="lg:hidden mb-6">
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="flex flex-col gap-4">
+                <h2 className="font-headings-desktop-h3 text-[#151515] text-xl">
+                  Jewelry Generator
+                </h2>
+
+                <Select
+                  value={selectedJewelryType}
+                  onValueChange={setSelectedJewelryType}>
+                  <SelectTrigger className="w-full h-10 px-3 rounded-lg border border-[#151515]">
+                    <SelectValue placeholder="Select jewelry type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bracelet">Bracelet</SelectItem>
+                    <SelectItem value="ring">Ring</SelectItem>
+                    <SelectItem value="watch">Watch</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <div className="flex flex-col gap-3">
+                  <p className={`text-sm font-medium transition-colors duration-200 ${
+                    isFormActive ? "text-[#151515]" : "text-gray-400"
+                  }`}>
+                    Upload jewelry images
+                  </p>
+
+                  <div className={`w-full rounded-lg border-2 border-dashed flex items-center justify-center transition-all duration-200 ${
+                    isFormActive ? "border-[#151515] bg-gray-50" : "border-gray-300 bg-gray-100"
+                  } h-[200px] overflow-hidden`}>
+                    {uploadedImages.length > 0 ? (
+                      <div className="w-full h-full p-3 overflow-y-auto">
+                        <div className="grid grid-cols-4 gap-2">
+                          {uploadedImages.map((image, index) => (
+                            <div 
+                              key={index} 
+                              className="relative aspect-square bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-200 cursor-pointer border border-gray-200 group"
+                            >
+                              <SafeImage 
+                                src={image} 
+                                alt={`Uploaded ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              <button
+                                onClick={() => setUploadedImages(prev => prev.filter((_, i) => i !== index))}
+                                className="absolute top-0.5 right-0.5 w-4 h-4 bg-red-600 text-white rounded-full flex items-center justify-center hover:bg-red-700 transition-all duration-200 shadow-md z-10 opacity-0 group-hover:opacity-100"
+                              >
+                                <X className="w-2 h-2" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <UploadIcon className={`w-6 h-6 mx-auto mb-2 ${isFormActive ? "text-gray-600" : "text-gray-400"}`} />
+                        <p className={`text-xs ${isFormActive ? "text-gray-600" : "text-gray-400"}`}>
+                          {isFormActive ? "Drop images here" : "Select jewelry type first"}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  <Button
+                    disabled={!isFormActive}
+                    variant="outline"
+                    className={`flex items-center justify-center gap-2 px-4 py-2 w-full rounded-lg border border-dashed transition-all duration-200 ${
+                      isFormActive 
+                        ? "bg-white border-[#151515] hover:bg-gray-50" 
+                        : "bg-gray-100 border-gray-300 cursor-not-allowed"
+                    }`}
+                    onClick={() => {
+                      if (isFormActive) {
+                        const placeholderImages = [
+                          "https://images.pexels.com/photos/1927259/pexels-photo-1927259.jpeg?auto=compress&cs=tinysrgb&w=200",
+                          "https://images.pexels.com/photos/1927260/pexels-photo-1927260.jpeg?auto=compress&cs=tinysrgb&w=200",
+                          "https://images.pexels.com/photos/1927261/pexels-photo-1927261.jpeg?auto=compress&cs=tinysrgb&w=200",
+                          "https://images.pexels.com/photos/1927262/pexels-photo-1927262.jpeg?auto=compress&cs=tinysrgb&w=200",
+                          "https://images.pexels.com/photos/1927263/pexels-photo-1927263.jpeg?auto=compress&cs=tinysrgb&w=200",
+                          "https://images.pexels.com/photos/1927264/pexels-photo-1927264.jpeg?auto=compress&cs=tinysrgb&w=200"
+                        ];
+                        const nextImage = placeholderImages[uploadedImages.length % placeholderImages.length];
+                        setUploadedImages(prev => [...prev, nextImage]);
+                      }
+                    }}
+                  >
+                    <UploadIcon className={`w-4 h-4 ${isFormActive ? "text-black" : "text-gray-400"}`} />
+                    <span className={`text-sm ${
+                      isFormActive ? "text-black" : "text-gray-400"
+                    }`}>
+                      Browse files
+                    </span>
+                  </Button>
+                </div>
+
+                <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+                  <button
+                    onClick={() => isFormActive && setSelectedGender("male")}
+                    disabled={!isFormActive}
+                    className={`flex-1 py-2 px-4 text-sm font-medium transition-all duration-200 ${
+                      selectedGender === "male" && isFormActive
+                        ? "bg-[#161616] text-white" 
+                        : isFormActive
+                        ? "bg-white text-[#151515] hover:bg-gray-50"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    }`}
+                  >
+                    Male
+                  </button>
+                  <button
+                    onClick={() => isFormActive && setSelectedGender("female")}
+                    disabled={!isFormActive}
+                    className={`flex-1 py-2 px-4 text-sm font-medium transition-all duration-200 border-l border-gray-300 ${
+                      selectedGender === "female" && isFormActive
+                        ? "bg-[#161616] text-white" 
+                        : isFormActive
+                        ? "bg-white text-[#151515] hover:bg-gray-50"
+                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    }`}
+                  >
+                    Female
+                  </button>
+                </div>
+
+                <Button
+                  disabled={!isFormActive || uploadedImages.length === 0}
+                  variant="default"
+                  onClick={handleGenerate}
+                  className={`w-full py-2 px-4 rounded-lg transition-all duration-200 ${
+                    isFormActive && uploadedImages.length > 0
+                      ? "bg-[#151515] hover:bg-[#2a2a2a] text-white" 
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
+                >
+                  <span className="font-medium">Generate</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 flex flex-col bg-gray-50 rounded-xl overflow-hidden">
+            {/* Fixed Toolbar */}
+            {generatedImages.length > 0 && !isGenerating && (
+              <div className="flex-shrink-0 flex justify-center p-4 md:p-6 lg:p-8 bg-gray-50 border-b border-gray-200">
+                <div className="bg-white rounded-lg shadow-lg border border-gray-200 px-2 md:px-4 py-2 flex items-center gap-2 md:gap-3">
+                  <Button
+                    variant="ghost"
+                    onClick={handleSelectAll}
+                    className="text-xs md:text-sm font-medium text-[#161616] hover:bg-gray-100 px-2 md:px-3 py-1 rounded"
+                  >
+                    <span className="hidden sm:inline">
+                      {selectedImages.size === generatedImages.length ? "Deselect All" : "Select All"}
+                    </span>
+                    <span className="sm:hidden">
+                      {selectedImages.size === generatedImages.length ? "Deselect" : "Select"}
+                    </span>
+                  </Button>
+                  
+                  <div className="w-px h-3 md:h-4 bg-gray-300"></div>
+                  
+                  <div className="flex items-center gap-1 md:gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleDownloadSelected}
+                      disabled={selectedImages.size === 0}
+                      className="w-7 h-7 md:w-8 md:h-8 text-[#161616] hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Download className="w-3 h-3 md:w-4 md:h-4" />
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleRegenerateSelected}
+                      disabled={selectedImages.size === 0}
+                      className="w-7 h-7 md:w-8 md:h-8 text-[#161616] hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <RotateCcw className="w-3 h-3 md:w-4 md:h-4" />
+                    </Button>
+                    
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleDeleteSelected}
+                      disabled={selectedImages.size === 0}
+                      className="w-7 h-7 md:w-8 md:h-8 text-[#161616] hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Trash2 className="w-3 h-3 md:w-4 md:h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Scrollable Content Area */}
+            <div className="flex-1 flex flex-col">
+            {isGenerating ? (
+              <div className="flex flex-col items-center justify-center min-h-[300px] max-h-[500px]">
+                <div className="w-3/4 max-w-md">
+                  <div className="mb-4 text-center">
+                    <h3 className="text-xl font-medium text-gray-700 mb-2">Generating Images...</h3>
+                    <p className="text-sm text-gray-500">{Math.round(progress)}% Complete</p>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div 
+                      className="bg-[#151515] h-3 rounded-full transition-all duration-100 ease-out"
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            ) : generatedImages.length > 0 ? (
+              <div 
+                className="bg-white border border-gray-200 rounded-lg shadow-sm mx-2 md:mx-4 mb-2 md:mb-4 overflow-hidden"
+                style={{ 
+                  minHeight: '500px', 
+                  maxHeight: 'min(800px, 75vh)' 
+                }}
+                onClick={handleOutsideClick}
+              >
+                <div className="h-full overflow-y-auto py-6 md:py-8 lg:py-12 px-4 md:px-6 lg:px-8">
+                  <div className="flex items-start justify-center min-h-full">
+                    <div 
+                      className="grid gap-4 md:gap-6 lg:gap-8 xl:gap-10 justify-center w-full"
+                      style={{
+                        gridTemplateColumns: window.innerWidth < 640 
+                          ? 'repeat(2, 1fr)' 
+                          : window.innerWidth < 1024 
+                          ? 'repeat(3, 1fr)' 
+                          : `repeat(${getGridConfig(generatedImages.length).cols}, 1fr)`,
+                        maxWidth: window.innerWidth < 1024 ? '100%' : 
+                          window.innerWidth < 1440 ? '1200px' : 
+                          getGridConfig(generatedImages.length).maxWidth
+                      }}
+                    >
+                      {generatedImages.map((image, index) => (
+                        <div 
+                          key={index} 
+                          className="relative cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] rounded-lg shadow-sm max-w-[200px] md:max-w-[250px] lg:max-w-[300px] xl:max-w-none mx-auto"
+                        >
+                          <div 
+                            className={`aspect-square rounded-lg overflow-hidden bg-white transition-all duration-200 cursor-pointer ${
+                              focusedImage === index ? 'ring-2 ring-black' : ''
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleImageFocus(index);
+                            }}
+                            onClick={() => handleImageFocus(index)}
+                            onDoubleClick={() => handleImageDoubleClick(index, image)}
+                          >
+                            <SafeImage
+                              src={image}
+                              alt={`Generated ${index + 1}`}
+                              className="w-full h-full object-cover"
+                              onDoubleClick={() => handleImageDoubleClick(index, image)}
+                            />
+                          </div>
+                          
+                          <div 
+                            className={`absolute top-1 right-1 md:top-2 md:right-2 w-5 h-5 md:w-6 md:h-6 rounded-full border-2 transition-all duration-200 cursor-pointer ${
+                            selectedImages.has(index) 
+                              ? 'bg-[#161616] border-[#161616]' 
+                              : 'bg-white border-gray-300 hover:border-[#161616]'
+                          }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleImageSelect(index);
+                            }}
+                          >
+                            {selectedImages.has(index) && (
+                              <svg className="w-3 h-3 md:w-4 md:h-4 text-white absolute top-0.5 left-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                      </div>
+                    </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center min-h-[300px] md:min-h-[400px] lg:min-h-[500px] max-h-[500px] md:max-h-[600px] lg:max-h-[700px] mx-2 md:mx-4 mb-2 md:mb-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+                <div className="text-center text-gray-500">
+                  <Gem className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 mx-auto mb-6 text-gray-300" />
+                  <p className="text-lg md:text-xl lg:text-2xl font-medium mb-3">No images generated yet</p>
+                  <p className="text-sm md:text-base lg:text-lg px-4">Upload jewelry images and click Generate to start</p>
+                </div>
+              </div>
+            )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Separator className="w-full" />
+
+      <footer className="flex flex-col w-full items-start pt-8 md:pt-16 pb-4 px-4 md:px-8 lg:px-20 bg-white">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between w-full gap-8 max-w-7xl mx-auto">
+          <h2 className="[font-family:'DM_Sans',Helvetica] font-bold text-[#151515] text-[32px] md:text-[50.3px] tracking-[-3.52px]">
+            snapwear AI
+          </h2>
+
+          <div className="flex flex-wrap items-center gap-4 md:gap-8">
+            {footerLinks.map((link, index) => (
+              <Button key={index} variant="link" className="p-0 h-auto">
+                <span className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg md:text-2xl tracking-[-1.20px] leading-[19.2px]">
+                  {link.text}
+                </span>
+              </Button>
+            ))}
+          </div>
+
+          <div className="flex flex-col w-full lg:w-[350px] items-start gap-6 md:gap-8">
+            <div className="flex items-start gap-4 md:gap-8">
+              <Button variant="ghost" size="icon" className="p-0 h-auto">
+                <InstagramIcon className="w-6 h-6 text-[#151515]" />
+              </Button>
+              <Button variant="ghost" size="icon" className="p-0 h-auto">
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <div className="w-4 h-4 bg-[#151515] rounded-sm"></div>
+                </div>
+              </Button>
+              <Button variant="ghost" size="icon" className="p-0 h-auto">
+                <div className="w-6 h-6 flex items-center justify-center">
+                  <div className="w-4 h-4 bg-[#151515] rounded-sm"></div>
+                </div>
+              </Button>
+            </div>
+
+            <div className="flex flex-col items-start gap-4 w-full">
+              <p className="[font-family:'DM_Sans',Helvetica] font-medium text-[#151515] text-lg leading-[27px]">
+                Subscribe to our newsletter
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-start gap-2 w-full">
+                <Input
+                  placeholder="Enter your email"
+                  className="flex-1 w-full sm:w-auto px-4 py-2 rounded border border-solid border-[#151515] [font-family:'DM_Sans',Helvetica] font-normal text-[#151515] text-sm leading-[21px]"
+                />
+                <Button variant="ghost" size="icon" className="p-0 self-center sm:self-auto">
+                  <ChevronDownIcon className="w-8 h-8 md:w-10 md:h-10 rotate-[-90deg]" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative w-full max-w-7xl mx-auto h-[150px] md:h-[310px] [font-family:'DM_Sans',Helvetica] font-normal text-transparent text-[120px] md:text-[293.1px] tracking-[-14.65px] leading-[120px] md:leading-[293.1px] whitespace-nowrap overflow-hidden">
+          <span className="font-medium text-[#151515] tracking-[-20px] md:tracking-[-42.95px]">
+            innovati
+          </span>
+          <span className="[font-family:'Cormorant_Garamond',Helvetica] font-light italic text-[#151515] text-[150px] md:text-[370.9px] tracking-[-30px] md:tracking-[-68.79px] leading-[150px] md:leading-[370.9px]">
+            ve
+          </span>
+        </div>
+
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between py-5 w-full max-w-7xl mx-auto border-t-2 border-[#151515] gap-4">
+          <div className="[font-family:'DM_Sans',Helvetica] font-normal text-[#151515] text-sm text-center leading-[21px]">
+            © SnapwearAI 2025.
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 md:gap-4">
+            {legalLinks.map((link, index) => (
+              <React.Fragment key={index}>
+                {index > 0 && (
+                  <Separator orientation="vertical" className="h-4 md:h-5 hidden sm:block" />
+                )}
+                <Button variant="link" className="p-0 h-auto">
+                  <span className="[font-family:'DM_Sans',Helvetica] font-normal text-[#151515] text-xs md:text-sm leading-[19.9px]">
+                    {link.text}
+                  </span>
+                </Button>
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
