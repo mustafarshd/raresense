@@ -87,13 +87,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [])
 
   const signUp = async (email: string, password: string, firstName: string, lastName: string) => {
-    const { error } = await auth.signUp(email, password, firstName, lastName)
-    return { error }
+    const { data, error } = await auth.signUp(email, password, firstName, lastName)
+    
+    if (error) {
+      return { error }
+    }
+    
+    // If signup successful and user is created, create profile
+    if (data.user) {
+      try {
+        // Create user profile in database
+        const { error: profileError } = await db.createUserProfile({
+          id: data.user.id,
+          email: data.user.email!,
+          first_name: firstName,
+          last_name: lastName
+        })
+        
+        if (profileError) {
+          console.error('Failed to create user profile:', profileError)
+          return { error: { message: 'Account created but profile setup failed. Please contact support.' } }
+        }
+      } catch (profileError) {
+        console.error('Profile creation error:', profileError)
+        return { error: { message: 'Account created but profile setup failed. Please contact support.' } }
+      }
+    }
+    
+    return { error: null }
   }
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await auth.signIn(email, password)
-    return { error }
+    const { data, error } = await auth.signIn(email, password)
+    
+    if (error) {
+      return { error }
+    }
+    
+    // Check if user profile exists in database
+    if (data.user) {
+      try {
+        const { data: profile, error: profileError } = await db.getUserProfile(data.user.id)
+        
+        if (profileError || !profile) {
+          // Sign out the user since they don't have a profile
+          await auth.signOut()
+          return { 
+            error: { 
+              message: 'No account found. Please sign up first or contact support if you believe this is an error.' 
+            } 
+          }
+        }
+      } catch (profileError) {
+        console.error('Profile check error:', profileError)
+        await auth.signOut()
+        return { 
+          error: { 
+            message: 'Unable to verify account. Please try again or contact support.' 
+          } 
+        }
+      }
+    }
+    
+    return { error: null }
   }
 
   const signOut = async () => {

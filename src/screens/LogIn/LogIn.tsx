@@ -1,12 +1,14 @@
 import { ChevronDownIcon, Eye, EyeOff, InstagramIcon } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Separator } from "../../components/ui/separator";
 
 export const LogIn = (): JSX.Element => {
   const navigate = useNavigate();
+  const { signIn } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: ""
@@ -50,13 +52,16 @@ export const LogIn = (): JSX.Element => {
     setIsSubmitting(true);
 
     try {
-      // Mock successful login for now
-      console.log('Login attempt:', formData);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      navigate('/');
+      const { error } = await signIn(formData.email, formData.password);
+      
+      if (error) {
+        setErrors({ general: error.message || 'Failed to log in' });
+      } else {
+        // Success - redirect to main page
+        navigate('/');
+      }
     } catch (error) {
-      setErrors({ general: 'An unexpected error occurred' });
+      setErrors({ general: 'An unexpected error occurred during login' });
     } finally {
       setIsSubmitting(false);
     }

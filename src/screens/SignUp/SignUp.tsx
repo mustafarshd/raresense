@@ -1,12 +1,14 @@
 import { ChevronDownIcon, Eye, EyeOff, InstagramIcon } from "lucide-react";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Separator } from "../../components/ui/separator";
 
 export const SignUp = (): JSX.Element => {
   const navigate = useNavigate();
+  const { signUp } = useAuth();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -75,13 +77,21 @@ export const SignUp = (): JSX.Element => {
     setIsSubmitting(true);
 
     try {
-      // Mock successful signup for now
-      console.log('Signup attempt:', formData);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      navigate('/');
+      const { error } = await signUp(
+        formData.email,
+        formData.password,
+        formData.firstName,
+        formData.lastName
+      );
+      
+      if (error) {
+        setErrors({ general: error.message || 'Failed to create account' });
+      } else {
+        // Success - redirect to login or main page
+        navigate('/login');
+      }
     } catch (error) {
-      setErrors({ general: 'An unexpected error occurred' });
+      setErrors({ general: 'An unexpected error occurred during signup' });
     } finally {
       setIsSubmitting(false);
     }

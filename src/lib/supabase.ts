@@ -52,6 +52,27 @@ export const auth = {
 // Database helpers
 export const db = {
   // User profile operations
+  createUserProfile: async (profile: {
+    id: string
+    email: string
+    first_name: string
+    last_name: string
+  }) => {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .insert({
+        id: profile.id,
+        email: profile.email,
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        tokens: 100, // Default tokens for new users
+        subscription_tier: 'free' // Default tier
+      })
+      .select()
+      .single()
+    return { data, error }
+  },
+
   getUserProfile: async (userId: string) => {
     const { data, error } = await supabase
       .from('user_profiles')
